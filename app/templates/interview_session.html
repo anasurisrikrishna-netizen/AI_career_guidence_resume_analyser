@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Practice session · Pathwise{% endblock %}
+{% block breadcrumb %}Practice session{% endblock %}
+
+{% block content %}
+<div class="page-content feature-page">
+  <section class="feature-heading">
+    <div>
+      <div class="eyebrow"><span class="eyebrow-line"></span> {{ session.mode|replace("_", " ")|upper }} PRACTICE</div>
+      <h1>{{ session.target_role }}</h1>
+      <p>Work through the questions at your own pace. You can revise an answer up to ten times.</p>
+    </div>
+    <a class="secondary-button" href="{{ url_for('interviews.workspace') }}">All sessions</a>
+  </section>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}<div class="flash-stack">{% for category, message in messages %}<div class="form-alert {{ category }}" role="status">{{ message }}</div>{% endfor %}</div>{% endif %}
+  {% endwith %}
+
+  <div class="question-list">
+    {% for item in session.session_data %}
+      <article class="question-card panel">
+        <div class="question-card-heading"><span class="question-number">{{ "%02d"|format(loop.index) }}</span><span class="question-category">{{ item.category|capitalize }}</span></div>
+        <h2>{{ item.question }}</h2>
+        <p class="assesses-line"><strong>Focus:</strong> {{ item.what_it_assesses }}</p>
+        {% if item.attempts %}
+          {% set latest = item.attempts[-1] %}
+          <section class="answer-feedback">
+            <div class="feedback-score"><span>Latest answer</span><strong>{{ latest.evaluation.rating }}<small>/5</small></strong></div>
+            <div class="feedback-copy">
+              <p class="your-answer"><strong>Your answer</strong><br>{{ latest.answer }}</p>
+              <div class="feedback-columns">
+                <div><h3>What worked</h3><ul>{% for point in latest.evaluation.strengths %}<li>{{ point }}</li>{% else %}<li>No specific strengths were identified.</li>{% endfor %}</ul></div>
+                <div><h3>Try next</h3><ul>{% for point in latest.evaluation.improvements %}<li>{{ point }}</li>{% else %}<li>No additional improvement notes.</li>{% endfor %}</ul></div>
+              </div>
+              <div class="answer-outline"><strong>Elements a strong answer could cover</strong><p>{{ latest.evaluation.outline }}</p></div>
+              <p class="feedback-explanation">{{ latest.evaluation.explanation }}</p>
+            </div>
+          </section>
+          {% if item.attempts|length > 1 %}
+            <details class="attempt-history"><summary>{{ item.attempts|length - 1 }} earlier attempt{% if item.attempts|length > 2 %}s{% endif %}</summary>
+              {% for attempt in item.attempts[:-1] %}<div class="older-attempt"><strong>Attempt {{ loop.index }} · {{ attempt.evaluation.rating }}/5</strong><p>{{ attempt.answer }}</p></div>{% endfor %}
+            </details>
+          {% endif %}
+        {% endif %}
+        {% if item.attempts|length < 10 %}
+          <form class="answer-form" action="{{ url_for('interviews.submit_answer', session_id=session.id, question_index=loop.index0) }}" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label for="answer-{{ loop.index }}">Your practice answer <span>({{ 10 - item.attempts|length }} attempt{% if item.attempts|length != 9 %}s{% endif %} remaining)</span></label>
+            <textarea id="answer-{{ loop.index }}" name="answer" rows="5" maxlength="6000" required placeholder="Write the answer you would give in an interview…">{% if item.attempts %}{{ item.attempts[-1].answer }}{% endif %}</textarea>
+            <button class="primary-button" type="submit">{% if item.attempts %}Evaluate revised answer{% else %}Get answer feedback{% endif %} <span aria-hidden="true">→</span></button>
+          </form>
+        {% endif %}
+      </article>
+    {% endfor %}
+  </div>
+  <p class="disclaimer"><span aria-hidden="true">ⓘ</span> Feedback is based only on what you entered. It does not certify knowledge, infer credentials, or predict interview outcomes.</p>
+</div>
+{% endblock %}

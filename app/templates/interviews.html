@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Interview preparation · Pathwise{% endblock %}
+{% block breadcrumb %}Interview preparation{% endblock %}
+
+{% block content %}
+<div class="page-content feature-page">
+  <section class="feature-heading">
+    <div>
+      <div class="eyebrow"><span class="eyebrow-line"></span> PRACTICE WITH PURPOSE</div>
+      <h1>Interview preparation</h1>
+      <p>Practice role-specific technical and behavioral questions, then get constructive feedback on your answer.</p>
+    </div>
+  </section>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}<div class="flash-stack">{% for category, message in messages %}<div class="form-alert {{ category }}" role="status">{{ message }}</div>{% endfor %}</div>{% endif %}
+  {% endwith %}
+
+  <section class="interview-start-panel panel">
+    <div class="builder-create-heading"><span class="upload-icon" aria-hidden="true">◎</span><div><h2>Start a practice session</h2><p>Questions are AI-generated for practice, not predictions of an employer’s interview.</p></div></div>
+    <form class="interview-start-form" action="{{ url_for('interviews.create_session') }}" method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div><label for="interview-role">Target role</label><input id="interview-role" name="target_role" maxlength="120" placeholder="e.g. Data Analyst" required></div>
+      <div><label for="interview-mode">Practice focus</label><select id="interview-mode" name="mode" required><option value="mixed">Mock interview · mixed</option><option value="technical">Technical questions</option><option value="hr">HR and behavioral questions</option></select></div>
+      <button class="primary-button" type="submit">Create session <span aria-hidden="true">→</span></button>
+    </form>
+  </section>
+
+  <section class="interview-history">
+    <div class="section-heading"><div><div class="eyebrow muted-eyebrow">YOUR PRIVATE PRACTICE HISTORY</div><h2>Interview sessions</h2></div><span class="section-aside">{{ sessions|length }} session{% if sessions|length != 1 %}s{% endif %}</span></div>
+    {% if sessions %}
+      <div class="interview-session-list">
+        {% for session in sessions %}
+          <a class="interview-session-row panel" href="{{ url_for('interviews.session_detail', session_id=session.id) }}">
+            <span class="interview-session-mark" aria-hidden="true">◎</span>
+            <span class="interview-session-copy"><strong>{{ session.target_role }}</strong><small>{{ session.mode|replace("_", " ")|capitalize }} · {{ session.created_at.strftime("%b %d, %Y") }} · {{ session.session_data|length }} questions</small></span>
+            <span class="draft-row-arrow" aria-hidden="true">→</span>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-roadmap panel"><span class="empty-resume-icon" aria-hidden="true">◎</span><h2>No practice sessions yet</h2><p>Create a session to get a focused set of questions for your target role.</p></div>
+    {% endif %}
+  </section>
+  <p class="disclaimer"><span aria-hidden="true">ⓘ</span> Answer feedback is AI-generated practice guidance, not a professional hiring assessment. Avoid sharing sensitive personal information in your answers.</p>
+</div>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Overview · Pathwise{% endblock %}
+
+{% block content %}
+<div class="page-content">
+  <section class="welcome-row">
+    <div>
+      <div class="eyebrow"><span class="eyebrow-line"></span> YOUR CAREER, IN FOCUS</div>
+      <h1>Make your next move<br class="desktop-break"> <span>with confidence.</span></h1>
+      <p class="welcome-copy">A clearer path to work you love starts with understanding where you are.</p>
+    </div>
+    <div class="welcome-art" aria-hidden="true">
+      <div class="art-orbit orbit-one"></div>
+      <div class="art-orbit orbit-two"></div>
+      <div class="art-spark spark-one">✦</div>
+      <div class="art-spark spark-two">✧</div>
+      <div class="art-core"><span>✦</span></div>
+      <div class="art-label">YOUR<br>GROWTH</div>
+    </div>
+  </section>
+
+  <section class="section-block" aria-labelledby="start-heading">
+    <div class="section-heading">
+      <div>
+        <div class="eyebrow muted-eyebrow">A GOOD PLACE TO BEGIN</div>
+        <h2 id="start-heading">Your career toolkit</h2>
+      </div>
+      <span class="section-aside">Everything you need, all in one place</span>
+    </div>
+
+    <div class="tool-grid">
+      <article class="tool-card featured-card" id="resume">
+        <div class="card-topline"><span class="card-icon resume-icon" aria-hidden="true">▤</span><span class="card-kicker">START HERE</span></div>
+        <h3>Understand your resume</h3>
+        <p>Get thoughtful feedback on your experience, skills, and how clearly your story comes through.</p>
+        <a class="card-action" href="{{ url_for('resumes.workspace') }}">Explore resume analysis <span aria-hidden="true">→</span></a>
+        <div class="card-decoration document-decoration" aria-hidden="true"><span></span><span></span><span></span><i></i></div>
+      </article>
+
+      <article class="tool-card career-card" id="career">
+        <div class="card-topline"><span class="card-icon career-icon" aria-hidden="true">↗</span><span class="card-kicker">FIND YOUR DIRECTION</span></div>
+        <h3>Explore career paths</h3>
+        <p>Connect your strengths to roles that fit—and see what skills can help you get there.</p>
+        <a class="card-action" href="{{ url_for('careers.workspace') }}">Explore career paths <span aria-hidden="true">→</span></a>
+        <div class="card-decoration path-decoration" aria-hidden="true"><i></i><i></i><i></i><span></span></div>
+      </article>
+
+      <article class="tool-card learning-card" id="learning">
+        <div class="card-topline"><span class="card-icon learning-icon" aria-hidden="true">▱</span><span class="card-kicker">KEEP GROWING</span></div>
+        <h3>Learn something new</h3>
+        <p>Find trustworthy learning resources and turn your goals into a practical roadmap.</p>
+        <a class="card-action" href="{{ url_for('learning.workspace') }}">Visit learning hub <span aria-hidden="true">→</span></a>
+        <div class="card-decoration book-decoration" aria-hidden="true"><span></span><span></span></div>
+      </article>
+    </div>
+  </section>
+
+  <section class="lower-grid" aria-label="More career tools">
+    <article class="panel journey-panel">
+      <div class="panel-heading">
+        <div><div class="eyebrow muted-eyebrow">YOUR JOURNEY</div><h2>A little progress goes a long way</h2></div>
+        <span class="panel-heading-icon" aria-hidden="true">↗</span>
+      </div>
+      <div class="journey-empty">
+        <div class="journey-illustration" aria-hidden="true"><span class="journey-sun"></span><span class="journey-hill hill-back"></span><span class="journey-hill hill-front"></span><span class="journey-flag">✦</span></div>
+        <div><strong>Your journey starts with one step</strong><p>Complete a resume analysis or choose a career goal to build your personal roadmap.</p></div>
+      </div>
+    </article>
+
+    <article class="panel quick-panel">
+      <div class="eyebrow muted-eyebrow">MORE WAYS TO MOVE FORWARD</div>
+      <h2>Make your next step count</h2>
+      <a class="quick-link" id="jobs" href="{{ url_for('jobs.workspace') }}"><span class="quick-icon jobs-quick-icon" aria-hidden="true">⌕</span><span><strong>Discover job opportunities</strong><small>Find roles that match your goals</small></span><span class="quick-arrow" aria-hidden="true">→</span></a>
+      <a class="quick-link" id="builder" href="{{ url_for('builder.workspace') }}"><span class="quick-icon builder-quick-icon" aria-hidden="true">✎</span><span><strong>Polish your resume</strong><small>Present your experience with impact</small></span><span class="quick-arrow" aria-hidden="true">→</span></a>
+      <a class="quick-link" id="interview" href="{{ url_for('interviews.workspace') }}"><span class="quick-icon interview-quick-icon" aria-hidden="true">◎</span><span><strong>Prepare for interviews</strong><small>Practice for the conversations ahead</small></span><span class="quick-arrow" aria-hidden="true">→</span></a>
+    </article>
+  </section>
+  <p class="disclaimer"><span aria-hidden="true">ⓘ</span> Career insights are guidance to support your decisions—not guarantees of hiring outcomes.</p>
+</div>
+{% endblock %}

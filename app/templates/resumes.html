@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Resume analysis · Pathwise{% endblock %}
+{% block breadcrumb %}Resume analysis{% endblock %}
+
+{% block content %}
+<div class="page-content resume-page">
+  <section class="feature-heading">
+    <div>
+      <div class="eyebrow"><span class="eyebrow-line"></span> A STRONGER STORY STARTS HERE</div>
+      <h1>Resume analysis</h1>
+      <p>Understand what your resume communicates and find practical ways to make it clearer.</p>
+    </div>
+  </section>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-stack">
+        {% for category, message in messages %}
+          <div class="form-alert {{ category }}" role="status">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <section class="upload-panel panel">
+    <div class="upload-copy">
+      <span class="upload-icon" aria-hidden="true">↑</span>
+      <div>
+        <h2>Upload your resume</h2>
+        <p>PDF or DOCX · Maximum 5 MB · Your file stays private to your account</p>
+      </div>
+    </div>
+    <form class="upload-form" action="{{ url_for('resumes.upload') }}" method="post" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="file-picker">
+        <span>Choose a file</span>
+        <input type="file" name="resume" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required>
+      </label>
+      <button class="primary-button" type="submit">Upload resume <span aria-hidden="true">→</span></button>
+    </form>
+  </section>
+
+  {% if resumes %}
+    <section class="resume-list-section">
+      <div class="section-heading">
+        <div><div class="eyebrow muted-eyebrow">YOUR PRIVATE FILES</div><h2>Resume history</h2></div>
+        <span class="section-aside">{{ resumes|length }} resume{% if resumes|length != 1 %}s{% endif %}</span>
+      </div>
+      <div class="resume-list">
+        {% for resume in resumes %}
+          <article class="resume-entry panel">
+            <div class="resume-entry-heading">
+              <span class="file-type-icon" aria-hidden="true">{% if resume.file_type == "pdf" %}PDF{% else %}DOC{% endif %}</span>
+              <div class="resume-entry-meta">
+                <h3>{{ resume.original_filename }}</h3>
+                <p>Added {{ resume.created_at.strftime("%b %d, %Y") }} · {{ resume.file_type|upper }}</p>
+              </div>
+              <form action="{{ url_for('resumes.analyze', resume_id=resume.id) }}" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="secondary-button" type="submit">Analyze resume <span aria-hidden="true">→</span></button>
+              </form>
+            </div>
+            {% if resume.analyses %}
+              {% set latest = resume.analyses|sort(attribute="created_at", reverse=true)|first %}
+              <div class="analysis-result">
+                <div class="result-score">
+                  <span class="result-label">Indicative compatibility</span>
+                  <strong>{{ "%.0f"|format(latest.ats_estimate) }}<small>/100</small></strong>
+                  <span class="result-note">A heuristic, not an actual employer ATS score</span>
+                </div>
+                <div class="result-summary">
+                  <div class="result-section"><h4>Summary</h4><p>{{ latest.feedback.summary }}</p></div>
+                  {% if latest.feedback.strengths %}
+                    <div class="result-section"><h4>Strengths</h4><ul>{% for item in latest.feedback.strengths %}<li>{{ item }}</li>{% endfor %}</ul></div>
+                  {% endif %}
+                  {% if latest.feedback.improvements %}
+                    <div class="result-section"><h4>Suggested improvements</h4><ul>{% for item in latest.feedback.improvements %}<li>{{ item }}</li>{% endfor %}</ul></div>
+                  {% endif %}
+                  {% if latest.feedback.ats_criteria %}
+                    <div class="result-section"><h4>Evaluation criteria</h4><ul>{% for item in latest.feedback.ats_criteria %}<li>{{ item }}</li>{% endfor %}</ul></div>
+                  {% endif %}
+                </div>
+              </div>
+            {% else %}
+              <div class="resume-unanalysed"><span class="status-dot"></span> Text extracted and ready for analysis</div>
+            {% endif %}
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+  {% else %}
+    <section class="empty-resume panel">
+      <div class="empty-resume-icon" aria-hidden="true">▤</div>
+      <h2>Your resume workspace is ready</h2>
+      <p>Upload a PDF or DOCX to extract its text securely. You choose when to request an AI review.</p>
+    </section>
+  {% endif %}
+  <p class="disclaimer"><span aria-hidden="true">ⓘ</span> AI feedback can be inaccurate. Review every suggestion and keep only what reflects your real experience.</p>
+</div>
+{% endblock %}

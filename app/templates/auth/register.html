@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Create account · Pathwise{% endblock %}
+{% block breadcrumb %}Create account{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <section class="auth-card">
+    <div class="auth-symbol" aria-hidden="true">✦</div>
+    <div class="eyebrow muted-eyebrow">START YOUR NEXT CHAPTER</div>
+    <h1 class="auth-title">Build a path that feels like yours.</h1>
+    <p class="auth-copy">Create an account to keep your resume, plans, and progress together.</p>
+    <form method="post" class="auth-form">
+      {{ form.hidden_tag() }}
+      <label for="{{ form.email.id }}">{{ form.email.label.text }}</label>
+      {{ form.email(autocomplete="email", placeholder="you@example.com") }}
+      {% for error in form.email.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+      <label for="{{ form.password.id }}">{{ form.password.label.text }}</label>
+      {{ form.password(autocomplete="new-password", placeholder="At least 12 characters") }}
+      <span class="field-hint">Use at least 12 characters. A unique passphrase is a good choice.</span>
+      {% for error in form.password.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+      {{ form.submit(class_="auth-submit") }}
+    </form>
+    <p class="auth-switch">Already have an account? <a href="{{ url_for('auth.login') }}">Sign in</a></p>
+    <p class="auth-privacy"><span aria-hidden="true">⌑</span> Your resume and career data stay private to your account.</p>
+  </section>
+</div>
+{% endblock %}

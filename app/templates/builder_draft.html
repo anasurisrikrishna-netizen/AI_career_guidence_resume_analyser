@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Edit resume draft · Pathwise{% endblock %}
+{% block breadcrumb %}Resume draft{% endblock %}
+
+{% block content %}
+<div class="page-content feature-page">
+  <section class="feature-heading draft-detail-heading">
+    <div>
+      <div class="eyebrow"><span class="eyebrow-line"></span> REVIEW EVERY SENTENCE</div>
+      <h1>{{ draft.content.contact_details.name or "Resume draft" }}</h1>
+      <p>Make your edits below. The downloadable file includes only your resume sections, not keyword suggestions.</p>
+    </div>
+    <a class="secondary-button" href="{{ url_for('builder.download_draft', draft_id=draft.id) }}">Download DOCX <span aria-hidden="true">↓</span></a>
+  </section>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}<div class="flash-stack">{% for category, message in messages %}<div class="form-alert {{ category }}" role="status">{{ message }}</div>{% endfor %}</div>{% endif %}
+  {% endwith %}
+
+  <div class="draft-editor-grid">
+    <form class="draft-editor panel" action="{{ url_for('builder.update_draft', draft_id=draft.id) }}" method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <h2>Editable resume content</h2>
+      <div class="contact-grid">
+        <div><label for="contact-name">Name</label><input id="contact-name" name="contact_name" maxlength="255" value="{{ draft.content.contact_details.name }}"></div>
+        <div><label for="contact-email">Email</label><input id="contact-email" name="contact_email" maxlength="255" value="{{ draft.content.contact_details.email }}"></div>
+        <div><label for="contact-phone">Phone</label><input id="contact-phone" name="contact_phone" maxlength="255" value="{{ draft.content.contact_details.phone }}"></div>
+        <div><label for="contact-location">Location</label><input id="contact-location" name="contact_location" maxlength="255" value="{{ draft.content.contact_details.location }}"></div>
+      </div>
+      <label for="professional-summary">Professional summary</label>
+      <textarea id="professional-summary" name="professional_summary" rows="5" maxlength="2000">{{ draft.content.professional_summary }}</textarea>
+      <label for="skills">Skills <span>(one per line)</span></label>
+      <textarea id="skills" name="skills" rows="4" maxlength="4000">{{ draft.content.skills|join("\n") }}</textarea>
+      <label for="experience-bullets">Experience <span>(one bullet per line)</span></label>
+      <textarea id="experience-bullets" name="experience_bullets" rows="7" maxlength="12000">{{ draft.content.experience_bullets|join("\n") }}</textarea>
+      <label for="project-bullets">Projects <span>(one bullet per line)</span></label>
+      <textarea id="project-bullets" name="project_bullets" rows="5" maxlength="10000">{{ draft.content.project_bullets|join("\n") }}</textarea>
+      <label for="keywords-to-review">Keywords to review <span>(verify before using; one per line)</span></label>
+      <textarea id="keywords-to-review" name="keywords_to_review" rows="3" maxlength="4000">{{ draft.content.keywords_to_review|join("\n") }}</textarea>
+      <button class="primary-button" type="submit">Save my edits <span aria-hidden="true">✓</span></button>
+    </form>
+
+    <aside class="draft-review-column">
+      <section class="draft-preview panel">
+        <div class="draft-preview-header"><span class="eyebrow muted-eyebrow">PREVIEW</span><span class="preview-badge">YOUR DRAFT</span></div>
+        <h2>{{ draft.content.contact_details.name or "Your name" }}</h2>
+        <p class="preview-contact">{{ [draft.content.contact_details.email, draft.content.contact_details.phone, draft.content.contact_details.location]|select|join(" · ") }}</p>
+        {% if draft.content.professional_summary %}<section><h3>Professional summary</h3><p>{{ draft.content.professional_summary }}</p></section>{% endif %}
+        {% if draft.content.skills %}<section><h3>Skills</h3><p>{{ draft.content.skills|join(" · ") }}</p></section>{% endif %}
+        {% if draft.content.experience_bullets %}<section><h3>Experience</h3><ul>{% for item in draft.content.experience_bullets %}<li>{{ item }}</li>{% endfor %}</ul></section>{% endif %}
+        {% if draft.content.project_bullets %}<section><h3>Projects</h3><ul>{% for item in draft.content.project_bullets %}<li>{{ item }}</li>{% endfor %}</ul></section>{% endif %}
+      </section>
+
+      <section class="suggestion-panel panel">
+        <div class="eyebrow muted-eyebrow">SUGGESTIONS—NOT CLAIMS</div>
+        <h2>Keywords to verify</h2>
+        {% if draft.content.keywords_to_review %}<ul>{% for item in draft.content.keywords_to_review %}<li>{{ item }}</li>{% endfor %}</ul>{% else %}<p>No extra terms were suggested.</p>{% endif %}
+        <div class="change-notes"><strong>What changed</strong><ul>{% for note in draft.content.change_notes %}<li>{{ note }}</li>{% endfor %}</ul></div>
+      </section>
+    </aside>
+  </div>
+  <p class="disclaimer"><span aria-hidden="true">ⓘ</span> Verify facts, spelling, dates, and contact details before downloading or sharing your resume.</p>
+</div>
+{% endblock %}

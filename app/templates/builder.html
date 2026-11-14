@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Resume builder · Pathwise{% endblock %}
+{% block breadcrumb %}Resume builder{% endblock %}
+
+{% block content %}
+<div class="page-content feature-page">
+  <section class="feature-heading">
+    <div>
+      <div class="eyebrow"><span class="eyebrow-line"></span> EDIT WITH YOUR FACTS IN MIND</div>
+      <h1>Resume builder</h1>
+      <p>Generate a careful rewrite from an analyzed resume, review every line, then edit and download your DOCX.</p>
+    </div>
+  </section>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}<div class="flash-stack">{% for category, message in messages %}<div class="form-alert {{ category }}" role="status">{{ message }}</div>{% endfor %}</div>{% endif %}
+  {% endwith %}
+
+  <section class="builder-create-panel panel">
+    <div class="builder-create-heading"><span class="upload-icon" aria-hidden="true">✎</span><div><h2>Create a reviewable draft</h2><p>Only extracted resume analysis and optional job text are sent for this rewrite—not the original full document.</p></div></div>
+    {% if resumes %}
+      <form class="builder-create-form" action="{{ url_for('builder.create_draft') }}" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label for="builder-resume">Analyzed resume</label>
+        <select id="builder-resume" name="resume_id" required>
+          {% for resume in resumes %}<option value="{{ resume.id }}">{{ resume.original_filename }} · {{ resume.created_at.strftime("%b %d, %Y") }}</option>{% endfor %}
+        </select>
+        <label for="builder-job-description">Optional job description</label>
+        <textarea id="builder-job-description" name="job_description" rows="4" maxlength="20000" placeholder="Paste the role description to identify keywords to review. Suggested keywords are not added as skills automatically."></textarea>
+        <div class="builder-create-footer"><p>AI suggestions may be inaccurate. They are drafts, not verified qualifications.</p><button class="primary-button" type="submit">Generate draft <span aria-hidden="true">→</span></button></div>
+      </form>
+    {% else %}
+      <div class="builder-empty"><p>Analyze a resume before creating a draft. This keeps rewrites grounded in extracted facts.</p><a class="secondary-button" href="{{ url_for('resumes.workspace') }}">Go to resume analysis <span aria-hidden="true">→</span></a></div>
+    {% endif %}
+  </section>
+
+  <section class="builder-history">
+    <div class="section-heading"><div><div class="eyebrow muted-eyebrow">YOUR SAVED EDITS</div><h2>Resume drafts</h2></div><span class="section-aside">{{ drafts|length }} draft{% if drafts|length != 1 %}s{% endif %}</span></div>
+    {% if drafts %}
+      <div class="draft-list">
+        {% for draft in drafts %}
+          <a class="draft-row panel" href="{{ url_for('builder.draft_detail', draft_id=draft.id) }}">
+            <span class="draft-file-icon" aria-hidden="true">DOCX</span>
+            <span class="draft-row-copy"><strong>{{ draft.content.contact_details.name or "Resume draft" }}</strong><small>Updated {{ draft.updated_at.strftime("%b %d, %Y") }}{% if draft.job_description %} · tailored for a job description{% endif %}</small></span>
+            <span class="draft-row-arrow" aria-hidden="true">→</span>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-roadmap panel"><span class="empty-resume-icon" aria-hidden="true">✎</span><h2>No drafts yet</h2><p>Your reviewed and editable resume drafts will be saved here.</p></div>
+    {% endif %}
+  </section>
+  <p class="disclaimer"><span aria-hidden="true">ⓘ</span> Keep only statements that accurately represent your experience. AI does not verify claims or add qualifications on your behalf.</p>
+</div>
+{% endblock %}

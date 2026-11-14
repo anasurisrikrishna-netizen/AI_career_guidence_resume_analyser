@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Learning hub · Pathwise{% endblock %}
+{% block breadcrumb %}Learning hub{% endblock %}
+
+{% block content %}
+<div class="page-content feature-page">
+  <section class="feature-heading">
+    <div>
+      <div class="eyebrow"><span class="eyebrow-line"></span> LEARN WITH TRUSTWORTHY SOURCES</div>
+      <h1>Learning hub</h1>
+      <p>Explore official documentation, tutorials, and courses selected for your target role.</p>
+    </div>
+  </section>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}<div class="flash-stack">{% for category, message in messages %}<div class="form-alert {{ category }}" role="status">{{ message }}</div>{% endfor %}</div>{% endif %}
+  {% endwith %}
+
+  <section class="learning-toolbar panel">
+    <form action="{{ url_for('learning.workspace') }}" method="get">
+      <label for="learning-role">Learning for</label>
+      <select id="learning-role" name="role">
+        {% for role in roles %}<option value="{{ role }}" {% if role == selected_role %}selected{% endif %}>{{ role }}</option>{% endfor %}
+      </select>
+      <button class="secondary-button" type="submit">Show resources</button>
+    </form>
+    <p>Resources are labeled free or freemium. Links are clickable only while recently verified.</p>
+  </section>
+
+  {% set levels = ["beginner", "intermediate", "advanced"] %}
+  {% for level in levels %}
+    {% set level_resources = resources|selectattr("level", "equalto", level)|list %}
+    {% if level_resources %}
+      <section class="resource-level">
+        <div class="section-heading"><div><div class="eyebrow muted-eyebrow">{{ "%02d"|format(loop.index) }} · {{ level|upper }}</div><h2>{{ level|capitalize }} resources</h2></div><span class="section-aside">{{ level_resources|length }} resource{% if level_resources|length != 1 %}s{% endif %}</span></div>
+        <div class="resource-grid">
+          {% for resource in level_resources %}
+            <article class="resource-card panel">
+              <div class="resource-card-top"><span class="resource-kind">{{ resource.resource_type|replace("_", " ")|capitalize }}</span><span class="access-badge {{ resource.access_type }}">{{ resource.access_type|capitalize }}</span></div>
+              <h3>{{ resource.title }}</h3>
+              <p class="resource-provider">{{ resource.provider }}</p>
+              <div class="resource-topics">{% for topic in resource.topics[:4] %}<span>{{ topic }}</span>{% endfor %}</div>
+              {% if resource.verified %}
+                <a class="resource-link" href="{{ resource.url }}" target="_blank" rel="noopener noreferrer">Open learning resource <span aria-hidden="true">↗</span></a>
+              {% else %}
+                <div class="resource-unverified"><span aria-hidden="true">ⓘ</span> Link requires verification before opening</div>
+              {% endif %}
+              {% if resource.verified %}
+                {% set current_status = progress.get(resource.id, "not_started") %}
+                <form class="progress-form" action="{{ url_for('learning.update_progress') }}" method="post">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="resource_id" value="{{ resource.id }}">
+                  <input type="hidden" name="role" value="{{ selected_role }}">
+                  <label for="progress-{{ resource.id }}">Progress</label>
+                  <select id="progress-{{ resource.id }}" name="status">
+                    <option value="not_started" {% if current_status == "not_started" %}selected{% endif %}>Not started</option>
+                    <option value="in_progress" {% if current_status == "in_progress" %}selected{% endif %}>In progress</option>
+                    <option value="completed" {% if current_status == "completed" %}selected{% endif %}>Completed</option>
+                  </select>
+                  <button class="secondary-button" type="submit">Save progress</button>
+                </form>
+              {% endif %}
+            </article>
+          {% endfor %}
+        </div>
+      </section>
+    {% endif %}
+  {% endfor %}
+
+  {% if not resources %}
+    <section class="empty-roadmap panel"><span class="empty-resume-icon" aria-hidden="true">▱</span><h2>No learning resources in this catalog yet</h2><p>Resources are added from a curated official-source catalog and must pass URL verification before links are enabled.</p></section>
+  {% endif %}
+
+  <section class="project-ideas panel">
+    <div><div class="eyebrow muted-eyebrow">LEARN BY BUILDING</div><h2>Put the skills into practice</h2><p>Choose a small project, describe what you learned, and keep it honest to your own work.</p></div>
+    <a class="secondary-button" href="{{ url_for('careers.workspace') }}">Create a career roadmap <span aria-hidden="true">→</span></a>
+  </section>
+  <p class="disclaimer"><span aria-hidden="true">ⓘ</span> External resources may change after verification. Free availability can vary by provider and region; check provider terms before enrolling.</p>
+</div>
+{% endblock %}

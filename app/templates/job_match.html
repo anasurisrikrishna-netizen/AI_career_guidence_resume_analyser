@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Job compatibility · Pathwise{% endblock %}
+{% block breadcrumb %}Job compatibility{% endblock %}
+
+{% block content %}
+<div class="page-content feature-page">
+  <section class="feature-heading">
+    <div>
+      <div class="eyebrow"><span class="eyebrow-line"></span> A CLOSER LOOK AT FIT</div>
+      <h1>Job compatibility</h1>
+      <p>An AI-generated comparison based on your latest resume analysis and the job description you provided.</p>
+    </div>
+  </section>
+  <section class="match-result-panel panel">
+    <div class="match-score-block">
+      <span class="result-label">Indicative compatibility</span>
+      <strong>{{ "%.0f"|format(match.compatibility_estimate) }}<small>/100</small></strong>
+      <span class="recommendation-badge {{ match.recommendation }}">{{ match.recommendation|replace("_", " ")|capitalize }}</span>
+      <span class="result-note">A heuristic, not a hiring prediction</span>
+    </div>
+    <div class="match-explanation">
+      <div class="result-section"><h2>Why this may fit</h2><p>{{ match.explanation }}</p></div>
+      <div class="match-skill-columns">
+        <div class="result-section"><h3>Skills reflected in both</h3><ul>{% for skill in match.matched_skills %}<li>{{ skill }}</li>{% else %}<li>No clear overlap identified.</li>{% endfor %}</ul></div>
+        <div class="result-section"><h3>Potential gaps</h3><ul>{% for skill in match.missing_skills %}<li>{{ skill }}</li>{% else %}<li>No explicit gap identified.</li>{% endfor %}</ul></div>
+      </div>
+      {% if match.caveats %}<div class="result-section"><h3>Review before you decide</h3><ul>{% for note in match.caveats %}<li>{{ note }}</li>{% endfor %}</ul></div>{% endif %}
+    </div>
+  </section>
+  <div class="match-result-actions"><a class="secondary-button" href="{{ url_for('jobs.workspace') }}">Back to job search</a><a class="primary-button" href="{{ url_for('resumes.workspace') }}">Review my resume <span aria-hidden="true">→</span></a></div>
+  <p class="disclaimer"><span aria-hidden="true">ⓘ</span> This comparison uses resume analysis data and user-provided job text. Verify every point and do not add skills or qualifications you do not have.</p>
+</div>
+{% endblock %}

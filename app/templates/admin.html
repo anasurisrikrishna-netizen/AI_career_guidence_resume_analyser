@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Admin dashboard · Pathwise{% endblock %}
+{% block breadcrumb %}Administration{% endblock %}
+
+{% block content %}
+<div class="page-content feature-page">
+  <section class="feature-heading">
+    <div>
+      <div class="eyebrow"><span class="eyebrow-line"></span> ADMINISTRATOR VIEW</div>
+      <h1>Platform overview</h1>
+      <p>Aggregate account, analysis, and AI usage information. User resume content is not shown here.</p>
+    </div>
+  </section>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}<div class="flash-stack">{% for category, message in messages %}<div class="form-alert {{ category }}" role="status">{{ message }}</div>{% endfor %}</div>{% endif %}
+  {% endwith %}
+
+  <section class="admin-metric-grid" aria-label="Platform metrics">
+    <article class="admin-metric panel"><span>Registered users</span><strong>{{ metrics.total_users }}</strong><small>All accounts</small></article>
+    <article class="admin-metric panel"><span>Resume analyses</span><strong>{{ metrics.total_analyses }}</strong><small>Saved analysis records</small></article>
+    <article class="admin-metric panel"><span>AI requests</span><strong>{{ metrics.ai_requests }}</strong><small>{{ metrics.failed_requests }} failed</small></article>
+    <article class="admin-metric panel"><span>Total tokens</span><strong>{{ "{:,}".format(metrics.total_tokens) }}</strong><small>Not a fixed cost estimate</small></article>
+  </section>
+
+  <section class="admin-token-grid">
+    <article class="admin-token-card panel"><span>Input tokens</span><strong>{{ "{:,}".format(metrics.input_tokens) }}</strong></article>
+    <article class="admin-token-card panel"><span>Output tokens</span><strong>{{ "{:,}".format(metrics.output_tokens) }}</strong></article>
+  </section>
+
+  <section class="admin-settings panel">
+    <div class="panel-heading"><div><div class="eyebrow muted-eyebrow">RUNTIME CONTROLS</div><h2>AI usage limits</h2></div><span class="admin-lock" aria-label="Administrator only">Admin only</span></div>
+    <p>Changes apply to subsequent AI requests. API credentials are managed outside this dashboard and are never displayed here.</p>
+    <form class="settings-form" action="{{ url_for('admin.update_usage_settings') }}" method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div><label for="max-input">Maximum input tokens per request</label><input id="max-input" type="number" name="AI_MAX_INPUT_TOKENS" min="1" max="100000" value="{{ settings.AI_MAX_INPUT_TOKENS }}" required></div>
+      <div><label for="max-output">Maximum output tokens per request</label><input id="max-output" type="number" name="AI_MAX_OUTPUT_TOKENS" min="1" max="8192" value="{{ settings.AI_MAX_OUTPUT_TOKENS }}" required></div>
+      <div><label for="daily-limit">Maximum daily tokens per user <span>(0 disables this cap)</span></label><input id="daily-limit" type="number" name="AI_MAX_DAILY_TOKENS_PER_USER" min="0" max="1000000" value="{{ settings.AI_MAX_DAILY_TOKENS_PER_USER }}" required></div>
+      <div><label for="retry-count">Retry attempts (maximum 5)</label><input id="retry-count" type="number" name="AI_RETRY_ATTEMPTS" min="1" max="5" value="{{ settings.AI_RETRY_ATTEMPTS }}" required></div>
+      <div><label for="retry-delay">Retry base delay in seconds (maximum 5)</label><input id="retry-delay" type="number" name="AI_RETRY_BASE_SECONDS" min="0" max="5" step="0.1" value="{{ settings.AI_RETRY_BASE_SECONDS }}" required></div>
+      <button class="primary-button" type="submit">Save limits <span aria-hidden="true">✓</span></button>
+    </form>
+  </section>
+
+  <section class="admin-data-grid">
+    <article class="admin-data-panel panel">
+      <div class="eyebrow muted-eyebrow">FEATURE BREAKDOWN</div><h2>AI usage by feature</h2>
+      {% if metrics.feature_usage %}
+        <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Feature</th><th>Requests</th><th>Input</th><th>Output</th><th>Total</th></tr></thead><tbody>
+          {% for feature, usage in metrics.feature_usage.items() %}<tr><td>{{ feature|replace("_", " ")|title }}</td><td>{{ usage.requests }}</td><td>{{ "{:,}".format(usage.input_tokens) }}</td><td>{{ "{:,}".format(usage.output_tokens) }}</td><td>{{ "{:,}".format(usage.total_tokens) }}</td></tr>{% endfor %}
+        </tbody></table></div>
+      {% else %}<p class="admin-empty">No AI requests recorded yet.</p>{% endif %}
+    </article>
+    <article class="admin-data-panel panel">
+      <div class="eyebrow muted-eyebrow">PROVIDER HEALTH</div><h2>API error statistics</h2>
+      {% if metrics.api_errors %}
+        <div class="error-stat-list">{% for error in metrics.api_errors %}<div><span>{{ error.code|replace("_", " ")|title }}</span><strong>{{ error.count }}</strong></div>{% endfor %}</div>
+      {% else %}<p class="admin-empty">No provider errors recorded.</p>{% endif %}
+    </article>
+  </section>
+  <p class="disclaimer"><span aria-hidden="true">ⓘ</span> Token counts are usage telemetry. They do not represent fixed monetary costs; pricing depends on provider, model, and current rates.</p>
+</div>
+{% endblock %}

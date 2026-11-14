@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Career guidance · Pathwise{% endblock %}
+{% block breadcrumb %}Career paths{% endblock %}
+
+{% block content %}
+<div class="page-content feature-page">
+  <section class="feature-heading">
+    <div>
+      <div class="eyebrow"><span class="eyebrow-line"></span> BUILD A PRACTICAL NEXT STEP</div>
+      <h1>Career guidance</h1>
+      <p>Compare your current skills with a role baseline and create a personalized learning roadmap.</p>
+    </div>
+  </section>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}<div class="flash-stack">{% for category, message in messages %}<div class="form-alert {{ category }}" role="status">{{ message }}</div>{% endfor %}</div>{% endif %}
+  {% endwith %}
+
+  <section class="career-form-panel panel">
+    <div class="career-form-intro">
+      <span class="upload-icon" aria-hidden="true">↗</span>
+      <div><h2>Choose a direction</h2><p>Tell us what you can do today. You can edit these skills before continuing.</p></div>
+    </div>
+    <form class="career-form" action="{{ url_for('careers.create_roadmap') }}" method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label for="target-role">Target career role</label>
+      <select id="target-role" name="target_role" required>
+        {% for role in roles %}<option value="{{ role }}">{{ role }}</option>{% endfor %}
+      </select>
+      <label for="current-skills">Your current skills <span>(comma-separated)</span></label>
+      <textarea id="current-skills" name="current_skills" rows="3" maxlength="4000" placeholder="For example: Python, SQL, Git, data visualization"></textarea>
+      {% if resumes %}
+        <label for="source-resume">Also include skills from an analyzed resume <span>(optional)</span></label>
+        <select id="source-resume" name="resume_id">
+          <option value="">Do not use a resume</option>
+          {% for resume in resumes %}<option value="{{ resume.id }}">{{ resume.original_filename }} · {{ resume.created_at.strftime("%b %d, %Y") }}</option>{% endfor %}
+        </select>
+      {% endif %}
+      <div class="career-form-footer"><p>Role skill baselines are general guidance, not hiring requirements. Your roadmap uses AI and should be reviewed.</p><button class="primary-button" type="submit">Build my roadmap <span aria-hidden="true">→</span></button></div>
+    </form>
+  </section>
+
+  <details class="role-baselines">
+    <summary>View role skill baselines</summary>
+    <div class="baseline-grid">
+      {% for role, skills in roles.items() %}
+        <div class="baseline-item"><strong>{{ role }}</strong><span>{{ skills|join(" · ") }}</span></div>
+      {% endfor %}
+    </div>
+  </details>
+
+  <section class="roadmap-history">
+    <div class="section-heading"><div><div class="eyebrow muted-eyebrow">YOUR SAVED PLANS</div><h2>Career roadmaps</h2></div><span class="section-aside">{{ roadmaps|length }} plan{% if roadmaps|length != 1 %}s{% endif %}</span></div>
+    {% if roadmaps %}
+      <div class="roadmap-list">
+        {% for roadmap in roadmaps %}
+          <article class="roadmap-card panel">
+            <header class="roadmap-header"><div><span class="roadmap-label">TARGET ROLE</span><h3>{{ roadmap.target_role }}</h3></div><time>{{ roadmap.created_at.strftime("%b %d, %Y") }}</time></header>
+            <div class="skill-comparison">
+              <div><h4>Skills you listed</h4><div class="skill-tags">{% for skill in roadmap.current_skills %}<span class="skill-tag present">{{ skill }}</span>{% else %}<span class="empty-note">No current skills were entered.</span>{% endfor %}</div></div>
+              <div><h4>Baseline skill gaps</h4><div class="skill-tags">{% for skill in roadmap.skill_gaps %}<span class="skill-tag gap">{{ skill }}</span>{% else %}<span class="empty-note">Your listed skills match this baseline.</span>{% endfor %}</div></div>
+            </div>
+            <div class="phase-list">
+              {% for phase in roadmap.roadmap %}
+                <section class="phase-card">
+                  <div class="phase-number">{{ "%02d"|format(loop.index) }}</div>
+                  <div class="phase-body">
+                    <div class="phase-meta"><span>{{ phase.level|capitalize }}</span><span class="phase-divider">·</span><strong>{{ phase.title }}</strong></div>
+                    <p class="phase-topics">{{ phase.topics|join(" · ") }}</p>
+                    <div class="phase-project"><strong>Practice project</strong><span>{{ phase.project }}</span></div>
+                    <div class="phase-outcome"><strong>Learning outcome</strong><span>{{ phase.outcome }}</span></div>
+                  </div>
+                </section>
+              {% endfor %}
+            </div>
+            {% if roadmap.related_roles %}<div class="related-roles"><strong>Related paths to explore</strong>{% for role in roadmap.related_roles %}<span>{{ role }}</span>{% endfor %}</div>{% endif %}
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-roadmap panel"><span class="empty-resume-icon" aria-hidden="true">✦</span><h2>Your roadmap will live here</h2><p>Select a role and enter the skills you already have to get a structured plan.</p></div>
+    {% endif %}
+  </section>
+  <p class="disclaimer"><span aria-hidden="true">ⓘ</span> Skill baselines and AI-generated roadmaps are general guidance. Validate them against current job descriptions and your own goals.</p>
+</div>
+{% endblock %}

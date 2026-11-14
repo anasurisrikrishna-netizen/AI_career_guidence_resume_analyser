@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Job matches · Pathwise{% endblock %}
+{% block breadcrumb %}Job matches{% endblock %}
+
+{% block content %}
+<div class="page-content feature-page">
+  <section class="feature-heading">
+    <div>
+      <div class="eyebrow"><span class="eyebrow-line"></span> SEARCH REAL OPPORTUNITIES</div>
+      <h1>Job recommendations</h1>
+      <p>Search live listings from Adzuna for India. Results are returned by the provider and are not stored by Pathwise.</p>
+    </div>
+  </section>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}<div class="flash-stack">{% for category, message in messages %}<div class="form-alert {{ category }}" role="status">{{ message }}</div>{% endfor %}</div>{% endif %}
+  {% endwith %}
+
+  <section class="job-search-panel panel">
+    <form action="{{ url_for('jobs.workspace') }}" method="get" class="job-search-form">
+      <div class="job-field"><label for="job-query">Role, skill, or keywords</label><input id="job-query" type="search" name="what" maxlength="120" value="{{ query }}" placeholder="e.g. Python developer" required></div>
+      <div class="job-field"><label for="job-location">Location in India</label><input id="job-location" type="search" name="where" maxlength="120" value="{{ location }}" placeholder="City, state, or remote"></div>
+      <button class="primary-button" type="submit">Search jobs <span aria-hidden="true">⌕</span></button>
+    </form>
+    <div class="provider-note"><span class="provider-dot"></span>Listings supplied by Adzuna · links retain provider attribution · job descriptions may be excerpts</div>
+  </section>
+
+  {% if error_message %}<div class="job-error form-alert error" role="status">{{ error_message }}</div>{% endif %}
+  {% if query %}
+    <section class="job-results-section">
+      <div class="section-heading">
+        <div><div class="eyebrow muted-eyebrow">LIVE PROVIDER RESULTS</div><h2>Matches for “{{ query }}”</h2></div>
+        {% if results %}<span class="section-aside">{{ results|length }} of {{ total_count }} result{% if total_count != 1 %}s{% endif %}</span>{% endif %}
+      </div>
+      {% if results %}
+        <div class="job-result-list">
+          {% for listing in results %}
+            <article class="job-card panel">
+              <div class="job-card-heading">
+                <div class="job-company-mark" aria-hidden="true">{{ listing.company[:1]|upper }}</div>
+                <div class="job-title-block"><h3>{{ listing.title }}</h3><div>{{ listing.company }} <span>·</span> {{ listing.location }}</div></div>
+                <span class="provider-label">ADZUNA</span>
+              </div>
+              {% if listing.contract_type %}<div class="job-meta">{{ listing.contract_type|replace("_", " ")|capitalize }}</div>{% endif %}
+              <p class="job-description">{{ listing.description }}</p>
+              <div class="job-card-actions">
+                {% if listing.apply_url %}<a class="secondary-button" href="{{ listing.apply_url }}" target="_blank" rel="noopener noreferrer">View on Adzuna <span aria-hidden="true">↗</span></a>{% else %}<span class="job-link-unavailable">Provider application link unavailable</span>{% endif %}
+                {% if resumes %}
+                  <details class="match-details">
+                    <summary>Compare with a resume</summary>
+                    <form action="{{ url_for('jobs.match_page') }}" method="post" class="match-form">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <label for="match-resume-{{ loop.index }}">Analyzed resume</label>
+                      <select id="match-resume-{{ loop.index }}" name="resume_id" required>
+                        {% for resume in resumes %}<option value="{{ resume.id }}">{{ resume.original_filename }} · {{ resume.created_at.strftime("%b %d, %Y") }}</option>{% endfor %}
+                      </select>
+                      <label for="match-description-{{ loop.index }}">Job description excerpt <span>(review and add context if needed)</span></label>
+                      <textarea id="match-description-{{ loop.index }}" name="job_description" rows="5" maxlength="20000" required>{{ listing.description }}</textarea>
+                      <button class="primary-button" type="submit">Check compatibility <span aria-hidden="true">→</span></button>
+                    </form>
+                  </details>
+                {% else %}
+                  <a class="job-prepare-link" href="{{ url_for('resumes.workspace') }}">Analyze a resume to compare fit <span aria-hidden="true">→</span></a>
+                {% endif %}
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+        {% if total_count > results|length and page|int < 20 %}
+          <div class="job-pagination"><a class="secondary-button" href="{{ url_for('jobs.workspace', what=query, where=location, page=(page|int + 1)) }}">Load next page <span aria-hidden="true">→</span></a></div>
+        {% endif %}
+      {% else %}
+        <div class="empty-roadmap panel"><span class="empty-resume-icon" aria-hidden="true">⌕</span><h2>No results to show</h2><p>{% if error_message %}The provider search could not be completed. Check your query or try later.{% else %}The provider returned no listings for this search. Try a broader role or location.{% endif %}</p></div>
+      {% endif %}
+    </section>
+  {% else %}
+    <section class="empty-roadmap panel"><span class="empty-resume-icon" aria-hidden="true">⌕</span><h2>Search when you’re ready</h2><p>Enter a role or skill to query Adzuna. Listings are never generated by AI.</p></section>
+  {% endif %}
+
+  <p class="disclaimer"><span aria-hidden="true">ⓘ</span> Listings and availability can change. Verify details with the employer before applying; compatibility feedback is heuristic guidance, not a hiring prediction.</p>
+</div>
+{% endblock %}

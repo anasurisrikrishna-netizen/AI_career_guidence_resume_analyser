@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f7fb">
+    <title>{% block title %}Pathwise{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+    {% block head %}{% endblock %}
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+        <a class="brand" href="{{ url_for('pages.dashboard') }}" aria-label="Pathwise home">
+          <span class="brand-mark" aria-hidden="true">p</span>
+          <span>pathwise<span class="brand-period">.</span></span>
+        </a>
+
+        <div class="nav-caption">WORKSPACE</div>
+        <nav class="primary-nav">
+          <a class="nav-link active" href="{{ url_for('pages.dashboard') }}" aria-current="page">
+            <span class="nav-icon" aria-hidden="true">⌂</span><span>Overview</span>
+          </a>
+          <a class="nav-link" href="{{ url_for('resumes.workspace') }}">
+            <span class="nav-icon" aria-hidden="true">▤</span><span>Resume analysis</span>
+            <span class="nav-pill">New</span>
+          </a>
+          <a class="nav-link" href="{{ url_for('careers.workspace') }}">
+            <span class="nav-icon" aria-hidden="true">↗</span><span>Career paths</span>
+          </a>
+          <a class="nav-link" href="{{ url_for('learning.workspace') }}">
+            <span class="nav-icon" aria-hidden="true">▱</span><span>Learning hub</span>
+          </a>
+          <a class="nav-link" href="{{ url_for('jobs.workspace') }}">
+            <span class="nav-icon" aria-hidden="true">⌕</span><span>Job matches</span>
+          </a>
+        </nav>
+
+        <div class="nav-caption tools-caption">TOOLS</div>
+        <nav class="primary-nav">
+          <a class="nav-link" href="{{ url_for('builder.workspace') }}">
+            <span class="nav-icon" aria-hidden="true">✎</span><span>Resume builder</span>
+          </a>
+          <a class="nav-link" href="{{ url_for('interviews.workspace') }}">
+            <span class="nav-icon" aria-hidden="true">◎</span><span>Interview prep</span>
+          </a>
+          {% if current_user.is_authenticated and current_user.role == "admin" %}
+            <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
+              <span class="nav-icon" aria-hidden="true">⚙</span><span>Administration</span>
+            </a>
+          {% endif %}
+        </nav>
+
+        <div class="sidebar-bottom">
+          <div class="help-card">
+            <span class="help-icon" aria-hidden="true">?</span>
+            <div><strong>Here to help</strong><span>Your next step starts here.</span></div>
+            <span class="help-arrow" aria-hidden="true">↗</span>
+          </div>
+          {% if current_user.is_authenticated %}
+            <form class="profile-form" action="{{ url_for('auth.logout') }}" method="post">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <span class="avatar">{{ current_user.email[:1]|upper }}</span>
+              <span class="profile-copy"><strong>{{ current_user.email }}</strong><small>{{ current_user.role|capitalize }} account</small></span>
+              <button class="profile-menu logout-button" type="submit">Log out</button>
+            </form>
+          {% else %}
+            <a class="profile-button" href="{{ url_for('auth.login') }}">
+              <span class="avatar">?</span>
+              <span class="profile-copy"><strong>Sign in</strong><small>Access your workspace</small></span>
+              <span class="profile-menu" aria-hidden="true">→</span>
+            </a>
+          {% endif %}
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <button class="menu-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">
+            <span></span><span></span><span></span>
+          </button>
+          <div class="breadcrumb"><span>Workspace</span><span class="breadcrumb-separator">/</span><strong>{% block breadcrumb %}Overview{% endblock %}</strong></div>
+          <div class="topbar-actions">
+            <span class="privacy-note"><span class="privacy-dot"></span>Your workspace is private</span>
+            <button class="notification-button" type="button" aria-label="Notifications">
+              <span aria-hidden="true">♧</span><i></i>
+            </button>
+            <span class="avatar top-avatar" aria-hidden="true">G</span>
+          </div>
+        </header>
+        {% block content %}{% endblock %}
+        <footer class="footer"><span>Pathwise</span><span>Build your next chapter with confidence.</span></footer>
+      </main>
+    </div>
+    <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>
